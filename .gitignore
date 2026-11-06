@@ -1,0 +1,25 @@
+# Dependências
+node_modules/
+package-lock.json.tmp
+
+# Logs e temporários
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+
+# Segredos / ambiente
+.env
+.env.*
+!.env.example
+
+# Firebase / deploy
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Cache de editores
+.vscode/
+.idea/
