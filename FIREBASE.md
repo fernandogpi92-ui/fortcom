@@ -1,109 +1,61 @@
-# Firebase — projeto `fortcom-c8f39`
+# Firebase — projeto `fortcom-obras`
 
-O app é offline-first: **ele funciona sem nada disso**. A nuvem serve só para
-sincronizar entre aparelhos. Os dados do dia a dia ficam no `localStorage` do
-celular (`obra_control_v4`), e o backup `.json` é o que garante a recuperação.
+Atualizado em 06/11/2026.
 
-## O que o app usa
+## Estado da configuração
 
-| Recurso | Onde está no código | Para quê |
-|---|---|---|
-| Firebase Auth (e-mail/senha) | `index.html` — `firebase.auth().signInWithEmailAndPassword` na tela "Nuvem FORTCOM" | cada aparelho autentica uma vez; a sessão fica persistida |
-| Firestore, documento único | `index.html` — `DOCPATH = ['empresas','fortcom','dados','principal']` | guarda `{ payload, dev, aba, updatedAt, rev, conflitos }`; o `payload` é o estado inteiro (obras) em JSON, `rev` cresce a cada gravação e `conflitos` lista as últimas edições concorrentes resolvidas |
-| SDK (compat 10.12.2) | `index.html` + `sw.js` (precache) | app / firestore / auth |
+- Projeto Firebase próprio: `fortcom-obras`.
+- App Web `Fortcom Web` registrado; a configuração pública do app já está em `index.html`.
+- Login proprietário escolhido: `fernandogpi92@gmail.com` (o mesmo e-mail usado na conta Google do Console). A senha do Firebase Auth não fica no repositório.
+- **Ainda pendente no Console:** habilitar o provedor E-mail/senha, criar o usuário, criar o Firestore e publicar `firestore.rules`.
+- Firebase Hosting ainda não foi implantado. O registro do app Web não publica o site automaticamente.
 
-Fotos **não** vão para a nuvem (ficam só no aparelho) — é o que mantém o
-documento dentro do limite de 1 MB. O app mede o tamanho do `payload` a cada
-envio: avisa acima de ~800 KB e, acima de 1 MB, para de sincronizar com o chip
-em vermelho ("Nuvem: dados acima de 1 MB") em vez de fingir que é falta de
-internet — os dados continuam salvos no aparelho.
+## O que o app sincroniza hoje
 
-## Como a sincronização funciona (desde 04/09/2026)
+O app é offline-first. Os dados são salvos no `localStorage` do navegador e, após autenticação, sincronizados com o Firestore no caminho:
 
-Não é mais "quem grava por último ganha". Cada aparelho guarda a **base** (o
-último estado que confirmou em comum com a nuvem) e:
-
-- **ao receber** um snapshot, faz um *merge de 3 vias* (base × local × nuvem)
-  por obra, semana, funcionário, etapa, diário, despesa e campo. Só o que mudou
-  **dos dois lados no mesmo campo** é conflito: fica a versão do aparelho que
-  está olhando, e o valor descartado vai para a lista `conflitos` (no
-  documento e no `localStorage`), com aviso nos dois aparelhos — o chip da
-  nuvem fica vermelho com "⚠ N conflitos — toque para ver";
-- **ao gravar**, usa uma transação: lê o documento atual e, se a nuvem mudou
-  desde a base, mescla **antes** de escrever e sobe `rev + 1`. Sem internet a
-  transação falha e a gravação fica pendente até o evento `online`;
-- um aparelho novo (só com a obra de exemplo vazia) simplesmente adota a nuvem.
-
-Exclusões seguem a regra natural: item apagado de um lado e **não mexido** do
-outro some dos dois; apagado de um lado e **editado** do outro volta (com
-registro de conflito), porque perder edição é pior que ver um item a mais.
-
-## Configuração no console — 2 passos, ~2 min
-
-### 1. Authentication → Sign-in method
-
-Habilite **E-mail/senha** e crie o usuário do dono em *Authentication → Users →
-Add user*:
-
-| | |
-|---|---|
-| **E-mail (login da nuvem)** | `gran.tech18@gmail.com` — o dono da conta Firebase |
-| **Não confundir com** | `fernandogpi92@gmail.com` (`EMPRESA.email`), que é o contato da empresa e vai no cabeçalho do relatório/PDF |
-
-O campo de e-mail da tela "Nuvem FORTCOM" já abre preenchido com
-`gran.tech18@gmail.com` (`index.html` → `EMAIL_PADRAO`). Se um dia trocar a
-conta no Firebase, troque **os dois lugares**: o `EMAIL_PADRAO` no `index.html`
-e a lista dentro de `dono()` em `firestore.rules`.
-
-### 2. Firestore Database → Rules
-
-Publique o conteúdo de **[`firestore.rules`](firestore.rules)** (está versionado
-neste repositório). Ele substitui a regra atual do projeto:
-
-```
-match /empresas/fortcom/dados/{doc} { allow read, write: if true; }
+```text
+empresas/fortcom/dados/principal
 ```
 
-Essa regra é o item **A1** da [AUDITORIA.md](AUDITORIA.md): qualquer pessoa na
-internet que conheça o endereço do documento — e ele está no código público do
-app — consegue **ler** nomes, valores e **chaves PIX** dos funcionários, e
-também **sobrescrever ou apagar** tudo, sem deixar rastro (parece "outro
-aparelho sincronizando").
+O estado inteiro da obra vai atualmente em um único documento (`payload`). O Firestore limita cada documento a 1 MiB; o app monitora o tamanho e interrompe a sincronização ao atingir o limite. **Fotos continuam no aparelho**: esta versão ainda não usa Firebase Storage. Para sincronizá-las, será necessária uma etapa posterior de implementação e avaliação das cotas/custos do Storage.
 
-Pelo CLI, se preferir:
+## Configuração no Firebase Console
+
+### 1. Habilitar autenticação por e-mail e senha
+
+1. Abra **Authentication → Provedores de login**.
+2. Ative **E-mail/senha**; deixe o login por link de e-mail desativado.
+3. Em **Usuários**, crie o usuário `fernandogpi92@gmail.com` e defina uma senha própria para o Firebase.
+
+Não use nem compartilhe a senha da conta Google. O login do app é uma conta do Firebase Auth.
+
+### 2. Criar o Firestore e publicar as regras
+
+1. Abra **Bancos de dados e armazenamento → Firestore Database** e crie o banco em **modo de produção** (não use regras abertas de teste).
+2. Na aba **Regras**, publique o conteúdo de [`firestore.rules`](firestore.rules).
+3. As regras permitem leitura e gravação apenas da conta acima, no documento `empresas/fortcom/dados/principal`; todo o restante é negado.
+
+Publicar `firestore.rules` no repositório **não** publica as regras no Firebase. A publicação precisa ser feita no Console ou pela CLI.
+
+### 3. Publicar o app
+
+O app Web foi registrado com Firebase Hosting, mas ainda não foi implantado. `firebase.json` atualmente aponta apenas para as regras do Firestore. A configuração de Hosting será preparada separadamente, publicando somente os arquivos do app — não os documentos internos do repositório.
+
+Depois da implantação, se o login reclamar de domínio não autorizado, adicione o domínio `*.web.app` do site em **Authentication → Configurações → Domínios autorizados**.
+
+## Publicação opcional das regras pela CLI
+
+Depois de instalar e autenticar a Firebase CLI no computador:
 
 ```bash
 firebase login
-firebase use fortcom-c8f39
-firebase deploy --only firestore:rules
+firebase deploy --only firestore:rules --project fortcom-obras
 ```
 
-## ⚠️ Ordem do deploy
+## Antes de usar dados reais
 
-Publique **as regras e a versão nova do app juntas** (o login de nuvem entrou em
-04/09/2026). Regras novas com app antigo = aquela instalação perde a
-sincronização até ser atualizada. **Os dados locais do celular não são
-afetados** — só a sync para.
-
-Antes de mexer: baixe um backup `.json` no próprio app (menu → *Backup agora*)
-e guarde no Drive.
-
-## Como conferir se ficou certo
-
-1. Abra o app num aparelho, passe pelo PIN `2604` e entre na nuvem com o
-   usuário criado → o chip no canto inferior deve chegar em **"Sincronizado ✓"**.
-2. No console, em Firestore, o documento
-   `empresas/fortcom/dados/principal` deve ter `updatedAt` recente.
-3. Teste o bloqueio: no console, use *Rules → Rules Playground* com
-   `get /empresas/fortcom/dados/principal` e **Authentication: desabilitado** →
-   a resposta deve ser **negada** (simula um estranho sem login).
-
-## O que ainda não está resolvido na nuvem
-
-- **A3** — a sync é *last-write-wins*: o último aparelho a gravar sobe o estado
-  inteiro e apaga o que o outro fez offline, sem aviso. Reproduzido na
-  verificação 7.9c de `testes/suite.js`.
-- **M5** — o documento tem limite de 1 MB e o app não avisa quando se aproxima;
-  quando estourar, o chip vai dizer "Aguardando internet" (erro enganoso).
-- A recomendação estrutural (A1/A3/M5 juntos) é sair do documento único para um
-  documento **por obra**.
+- Confirme que o usuário proprietário existe em Authentication e que as regras acima foram publicadas.
+- Faça um backup `.json` pelo app antes de migrar dados.
+- Dados do `localStorage` de outro domínio/aparelho não migram automaticamente para o novo site; use backup/restauração ou a sincronização autenticada.
+- A chave de configuração Web (`apiKey`) é pública por design; a proteção dos dados depende da autenticação e das regras do Firestore.

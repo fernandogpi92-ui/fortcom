@@ -3929,12 +3929,12 @@ function renderDespesasPorObra(){
   var PIN_HASH_KEY='fortcom_pin_hash', RESG_KEY='fortcom_pin_resgate',
       TENT_KEY='fortcom_pin_tent', BLOQ_KEY='fortcom_pin_bloq';
   var CFG   = {
-    apiKey:"AIzaSyBGEELOTe8rlFQXAlsNAJVPf7BaSLKVahw",
-    authDomain:"fortcom-c8f39.firebaseapp.com",
-    projectId:"fortcom-c8f39",
-    storageBucket:"fortcom-c8f39.firebasestorage.app",
-    messagingSenderId:"932715602737",
-    appId:"1:932715602737:web:f4c030d6a2dc350f9f8610"
+    apiKey:"AIzaSyAIhNgEpHmBI0FNjEG3ZPbWBRkKeJbWqAA",
+    authDomain:"fortcom-obras.firebaseapp.com",
+    projectId:"fortcom-obras",
+    storageBucket:"fortcom-obras.firebasestorage.app",
+    messagingSenderId:"869748380377",
+    appId:"1:869748380377:web:6c3dca62c598f41515e4c8"
   };
   var DOCPATH = ['empresas','fortcom','dados','principal'];
   var LSPIN = 'fortcom_pin_ok';
@@ -3953,10 +3953,10 @@ function renderDespesasPorObra(){
       authSenha=document.getElementById('authSenha'),
       authBtn=document.getElementById('authBtn'),
       authErr=document.getElementById('authErr'),
-      // conta do DONO no Firebase (a mesma listada em firestore.rules).
-      // Nao usar EMPRESA.email: aquele e o contato da empresa, que vai no
-      // cabecalho do relatorio/PDF — nao e conta de login da nuvem.
-      EMAIL_PADRAO='gran.tech18@gmail.com';
+      // Conta autorizada no Firebase e listada em firestore.rules.
+      // Mantemos o login explícito, separado de EMPRESA.email, mesmo quando
+      // os dois usam o mesmo endereço nesta configuração.
+      EMAIL_PADRAO='fernandogpi92@gmail.com';
   // No SDK real, firebase.auth() LANCA 'app/no-app' enquanto initializeApp nao
   // rodou — e initializeApp so rodava dentro de iniciar(), depois do login.
   // Resultado: o botao "Entrar na nuvem" travava em "Entrando…" para sempre.
