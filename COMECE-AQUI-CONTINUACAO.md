@@ -137,8 +137,8 @@ Resultado esperado na base atual: **128 verificações, 128 aprovadas**.
 
 ## 8. Cuidados importantes antes de continuar
 
-1. **O código ainda aponta para o Firebase do projeto original.** Para uma versão independente, criar/configurar um Firebase próprio e substituir as credenciais públicas de configuração, o caminho dos dados, o login autorizado e as regras, conforme necessário.
-2. Não usar a nuvem original para uma operação independente nem inserir dados reais antes de decidir a configuração definitiva.
+1. **Firebase próprio em configuração.** O projeto `fortcom-obras` e o app Web foram criados; o checkout local já aponta para a nova configuração e o login proprietário definido é `fernandogpi92@gmail.com`. Ainda falta habilitar E-mail/senha, criar o usuário, criar o Firestore e publicar as regras.
+2. Não usar a nuvem original para uma operação independente nem inserir dados reais antes de publicar e conferir as regras restritivas do novo projeto.
 3. Publicar regras restritas do Firestore e testar acesso negado para usuários não autenticados.
 4. Não colocar senhas, tokens ou outros segredos no código, no GitHub ou neste documento.
 5. As credenciais compartilhadas na conversa anterior não foram gravadas aqui. Recomenda-se trocar senhas que tenham sido expostas em chats.
